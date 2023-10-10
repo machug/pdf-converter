@@ -1,0 +1,14 @@
+{
+  "name": "convert-to-pdf",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "start": "func start",
+    "test": "echo \"No tests yet...\""
+  },
+  "dependencies": {
+    "@azure/functions": "^4.0.0",
+    "puppeteer": "^21.3.8"
+  },
+  "main": "src/functions/*.js"
+}
