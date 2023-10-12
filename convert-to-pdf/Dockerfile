@@ -1,7 +1,8 @@
-FROM mcr.microsoft.com/azure-functions/node:4-node20
+FROM mcr.microsoft.com/azure-functions/node:4-node18
 
 ENV AzureWebJobsScriptRoot=/home/site/wwwroot \
-    AzureFunctionsJobHost__Logging__Console__IsEnabled=true
+    AzureFunctionsJobHost__Logging__Console__IsEnabled=true \
+    PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
 
 # Install dependencies for Puppeteer and Chromium
 RUN apt-get update && \
