@@ -1,18 +1,34 @@
 const { app } = require("@azure/functions");
 const puppeteer = require("puppeteer");
 
+const launchBrowser = async () => {
+  const browser = await puppeteer.launch({
+    headless: 'new',
+    executablePath: '/usr/local/bin/chromium/chrome',
+    args: ['--no-sandbox']
+  });
+  return browser;
+};
+
+const createPage = async (browser, htmlContent) => {
+  const page = await browser.newPage();
+  await page.setContent(htmlContent);
+  return page;
+};
+
+const convertToPDF = async (page) => {
+  const pdfBuffer = await page.pdf({ format: "A4" });
+  return pdfBuffer;
+};
+
 app.http("ConvertToPDF", {
   methods: ["POST"],
   handler: async (req, context) => {
-
     context.log("Request method:", req.method);
 
-    // extract JSON payload from body
     const body = await req.json();
-
     context.log("Body:", body);
 
-    // Check if the request body contains HTML content
     if (!body || !body.html) {
       return {
         status: 400,
@@ -20,21 +36,14 @@ app.http("ConvertToPDF", {
       };
     }
 
-    // Log the received request headers and body for debugging
     const htmlContent = body.html;
     context.log("HTML content received.");
     context.log("Starting conversion process...");
 
     try {
-      // Create a browser instance and open a new page
       context.log("Launching browser...");
-      const browser = await puppeteer.launch({
-        headless: 'new',
-        executablePath: '/usr/local/bin/chromium/chrome',
-        args: ['--no-sandbox']
-      });
+      const browser = await launchBrowser();
 
-      // Check if the browser instance was created successfully
       if (!browser) {
         context.log("Browser instance not created.");
         return {
@@ -43,15 +52,10 @@ app.http("ConvertToPDF", {
         };
       }
 
-      const page = await browser.newPage();
-      context.log("Browser launched.");
-
-      // Set HTML content to the page
-      await page.setContent(htmlContent);
+      const page = await createPage(browser, htmlContent);
       context.log("HTML content loaded.");
 
-      // Print the page as a PDF
-      const pdfBuffer = await page.pdf({ format: "A4" });
+      const pdfBuffer = await convertToPDF(page);
 
       await browser.close();
       context.log("Browser closed.");
