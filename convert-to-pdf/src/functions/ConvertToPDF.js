@@ -17,26 +17,28 @@ const createPage = async (browser, htmlContent) => {
 };
 
 const convertToPDF = async (page) => {
-  const pdfBuffer = await page.pdf({ format: "A4" });
+  const pdfBuffer = await page.pdf({ format: "A4", printBackground: true, landscape: true });
   return pdfBuffer;
 };
 
 app.http("ConvertToPDF", {
   methods: ["POST"],
+  authLevel: 'function',
   handler: async (req, context) => {
     context.log("Request method:", req.method);
 
     const body = await req.json();
     context.log("Body:", body);
 
-    if (!body || !body.html) {
+    if (!body || !body.html || !body.header || !body.footer) {
       return {
         status: 400,
-        body: "HTML content is missing in the request body.",
+        body: "HTML content, header or footer is missing in the request body.",
       };
     }
 
-    const htmlContent = body.html;
+    // Concatenate header, html and footer.
+    const htmlContent = body.header + body.html + body.footer;
     context.log("HTML content received.");
     context.log("Starting conversion process...");
 
